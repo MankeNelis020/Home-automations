@@ -269,8 +269,6 @@ function disableFiveMinSync() {
 function syncRow(sheet, row, headers, options) {
   options = options || {};
   const source = options.source || 'manual'; // 'edit' | 'batch' | 'manual'
-  const fromSheet = (source === 'edit' || source === 'manual');
-  const fromBatch = (source === 'batch');
 
   let categorie    = getCell(sheet, row, headers[HEADER.categorie]);
   const omschrijving = getCell(sheet, row, headers[HEADER.omschrijving]);
@@ -375,18 +373,7 @@ function syncRow(sheet, row, headers, options) {
 
   // Vanaf hier: we hebben een bestaand event (met of zonder eerdere koppeling)
 
-  // Calendar → Sheet logica bij batch-run:
-  if (fromBatch) {
-    const changedFromCalendar = updateSheetFromCalendarIfNeeded_(sheet, row, headers, ev, deadlineVal, startTimeVal, duurUren);
-    if (headers[HEADER.calendarIdUsed]) {
-      try { setCell(sheet, row, headers[HEADER.calendarIdUsed], cal.getId()); } catch (_) {}
-    }
-    // Bij batch-run doen we geen agressieve pushes terug naar Calendar
-    // tenzij de sheet duidelijk afwijkt EN vanuit sheet bewerkt (dat gebeurt via onEditInstalled).
-    return changedFromCalendar ? 'synced' : 'skipped';
-  }
-
-  // Sheet → Calendar logica bij onEdit / handmatig
+  // Sheet → Calendar logica bij onEdit / handmatig / batch
   const calStart = ev.getStartTime();
   const calEnd   = ev.getEndTime();
   const calTitle = ev.getTitle();
